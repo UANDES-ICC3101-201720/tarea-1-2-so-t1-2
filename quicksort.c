@@ -81,23 +81,40 @@ int main(int argc, char** argv) {
     }
 
     /* Create the domain socket to talk to datagen. */
-    struct sockaddr_un addr;
-    int fd;
+    /* Allocate memory for the data set array according with size T */
+    UINT readvalues = 0;
+    size_t numvalues = pow(10, tvalue);
+    size_t readbytes = 0;
 
+    UINT *readbuf = malloc(sizeof(UINT) * numvalues);
+
+    // Begin string to datagen
+    char data[10];
+    strcpy(data,"BEGIN U ");
+    char t[2];
+    sprintf(t, "%d", tvalue);
+    strcat(data, t);
+
+    // pre req socket
+    struct sockaddr_un addr;
+    int fd,cl,rc;
+
+    // Create socket
     if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-        perror("[quicksort] Socket error.\n");
+        perror("[quicksort] Error creating socket.\n");
         exit(-1);
     }
-
+    // Set address pointing DSOCKET_PATH (i.e. /tmp/dg.sock)
     memset(&addr, 0, sizeof(addr));
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, DSOCKET_PATH, sizeof(addr.sun_path) - 1);
 
+    // Connect to datagen
     if (connect(fd, (struct sockaddr *) &addr, sizeof(addr)) == -1) {
-        perror("[quicksort] connect error.\n");
-        close(fd);
+        perror("[quicksort] Connection error.\n");
         exit(-1);
     }
+
 
     /* DEMO: request two sets of unsorted random numbers to datagen */
     for (int i = 0; i < 2; i++) {
