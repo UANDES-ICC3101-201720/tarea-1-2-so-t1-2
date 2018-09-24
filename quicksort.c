@@ -173,6 +173,7 @@ int main(int argc, char** argv) {
         }
     }
 
+    free(readbuf);
     close(fd);
     exit(0);
 }
