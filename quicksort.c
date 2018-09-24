@@ -11,8 +11,27 @@
 #include "const.h"
 #include "util.h"
 
-// TODO: implement
+#define SWAP(x, y) do { typeof(x) SWAP = x; x = y; y = SWAP; } while (0)
+
+UINT partition(UINT* A, UINT lo, UINT hi){
+    UINT pivot = A[hi];
+    UINT i = lo;
+    for (int j = lo; j < hi; ++j) {
+        if (A[j] < pivot) {
+            SWAP(A[i], A[j]);
+            i++;
+        }
+    }
+    SWAP(A[i], A[hi]);
+    return i;
+}
+
 int quicksort(UINT* A, int lo, int hi) {
+    if (lo < hi){
+        UINT p = partition(A, (UINT) lo, (UINT) hi);
+        quicksort(A, lo, p - 1);
+        quicksort(A, p + 1, hi);
+    }
     return 0;
 }
 
