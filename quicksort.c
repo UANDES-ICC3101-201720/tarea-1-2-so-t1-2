@@ -28,7 +28,42 @@ int main(int argc, char** argv) {
     printf("[quicksort] Number of cores available: '%ld'\n",
            sysconf(_SC_NPROCESSORS_ONLN));
 
-    /* TODO: parse arguments with getopt */
+    /* parse arguments with getopt */
+
+    int tvalue = 3;
+    int evalue = 1;
+    int pvalue = 1000;
+
+    int index;
+    int c;
+
+    opterr = 0;
+
+
+    while ((c = getopt (argc, argv, "T:E:P:")) != -1)
+        switch (c)
+        {
+            case 'T':
+                tvalue = atoi(optarg);
+                break;
+            case 'E':
+                evalue = atoi(optarg);
+                break;
+            case '?':
+                if (optopt == 'T')
+                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                else if (optopt == 'E')
+                    fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+                else if (isprint (optopt))
+                    fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+                else
+                    fprintf (stderr,
+                             "Unknown option character `\\x%x'.\n",
+                             optopt);
+                return 1;
+            default:
+                abort ();
+        }
 
     /* TODO: start datagen here as a child process. */
 
