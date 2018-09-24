@@ -25,8 +25,7 @@ int main(int argc, char** argv) {
     printf("[quicksort] Starting up...\n");
 
     /* Get the number of CPU cores available */
-    printf("[quicksort] Number of cores available: '%ld'\n",
-           sysconf(_SC_NPROCESSORS_ONLN));
+    int cores = sysconf(_SC_NPROCESSORS_ONLN);
 
     /* parse arguments with getopt */
 
@@ -65,7 +64,21 @@ int main(int argc, char** argv) {
                 abort ();
         }
 
-    /* TODO: start datagen here as a child process. */
+    /* Start datagen as a child process. */
+
+    int child = fork();
+    if (child < 0) {
+        fprintf(stderr, "forking a child failed\n");
+        exit(-1);
+    } else if (child == 0) { // Child process
+        close(STDOUT_FILENO); // Close stdout for datagen
+        char *myargs[2];
+        myargs[0] = strdup("./datagen");
+        myargs[1] = NULL;
+        execvp(myargs[0], myargs);
+    } else { // parent
+        sleep(1); // wait till child is up and running
+    }
 
     /* Create the domain socket to talk to datagen. */
     struct sockaddr_un addr;
