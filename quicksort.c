@@ -311,50 +311,39 @@ int main(int argc, char** argv) {
     }
 
 
-    /* DEMO: request two sets of unsorted random numbers to datagen */
-    for (int i = 0; i < 2; i++) {
-        /* T value 3 hardcoded just for testing. */
-        char *begin = "BEGIN U 3";
-        int rc = strlen(begin);
+    // Experiments loop
+    for (int i = 0; i < evalue; ++i) {
 
-        /* Request the random number stream to datagen */
-        if (write(fd, begin, strlen(begin)) != rc) {
-            if (rc > 0) fprintf(stderr, "[quicksort] partial write.\n");
-            else {
-                perror("[quicksort] write error.\n");
-                exit(-1);
-            }
-        }
-
-        /* validate the response */
-        char respbuf[10];
-        read(fd, respbuf, strlen(DATAGEN_OK_RESPONSE));
-        respbuf[strlen(DATAGEN_OK_RESPONSE)] = '\0';
-
-        if (strcmp(respbuf, DATAGEN_OK_RESPONSE)) {
-            perror("[quicksort] Response from datagen failed.\n");
-            close(fd);
+        /* Create data */
+        // Send request to datagen
+        if (write(fd, data, strlen(data)) == -1) {
+            perror("[quicksort] Sending message error.\n");
             exit(-1);
         }
 
-        UINT readvalues = 0;
-        size_t numvalues = pow(10, 3);
-        size_t readbytes = 0;
-
-        UINT *readbuf = malloc(sizeof(UINT) * numvalues);
-
+        // Read stream (by CLAUDIO ALVAREZ GOMEZ)
         while (readvalues < numvalues) {
             /* read the bytestream */
             readbytes = read(fd, readbuf + readvalues, sizeof(UINT) * 1000);
             readvalues += readbytes / 4;
         }
 
-        /* Print out the values obtained from datagen */
-        for (UINT *pv = readbuf; pv < readbuf + numvalues; pv++) {
-            printf("%u\n", *pv);
+        printf("\n");
+        // Print before
+        for (int j = 1; j < numvalues; ++j) {
+            printf("%d,", readbuf[j]);
         }
+        printf("\n");
 
-        free(readbuf);
+        /* Call parallel_quicksort */
+        parallel_quicksort(readbuf, 1, (numvalues - 1));
+
+        // Print after
+        for (int j = 1; j < numvalues; ++j) {
+            printf("%d,", readbuf[j]);
+        } printf("\n");
+
+
     }
 
     /* Issue the END command to datagen */
