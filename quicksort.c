@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
     size_t numvalues = pow(10, tvalue);
     size_t readbytes = 0;
 
-    UINT *readbuf = malloc(sizeof(UINT) * numvalues);
+//    UINT *readbuf = malloc(sizeof(UINT) * numvalues);
 
     // Begin string to datagen
     char data[10];
@@ -154,7 +154,8 @@ int main(int argc, char** argv) {
             printf("%lu,", (unsigned long) readbuf[i]);
         }
 
-
+        readvalues = 0;
+        readbytes = 0;
         free(readbuf);
         readbuf = NULL;
     }
