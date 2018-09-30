@@ -8,19 +8,12 @@
 #include <string.h>
 #include <time.h>
 #include <pthread.h>
+#include <getopt.h>
 #include "types.h"
 #include "const.h"
 #include "util.h"
 
 #define SWAP(x, y) do { typeof(x) SWAP = x; (x) = y; (y) = SWAP; } while (0)
-
-void printArray(UINT arr[], int lo, int hi) {
-    printf("\n");
-    for (int i = lo; i <= hi; ++i) {
-        printf(" %d", arr[i]);
-    }
-    printf("\n");
-}
 
 int partition(UINT A[], int lo, int hi){
     int pivot = A[hi];
@@ -60,7 +53,6 @@ typedef struct __lrargs_t{
 
 int randBetween(int lo, int hi){
     srand((unsigned)time(NULL));
-//    usleep(500);
     srand((unsigned)time(NULL));
     int randm = rand() % (hi-lo+1);
     return lo + randm;
@@ -113,7 +105,7 @@ int local_rearrangement(UINT A[], int lo, int hi, int pivot){
         }
     }
     if (no_smalls) return -1; // All values where bigger than pivot
-    int small = i - 1; // TODO: i-1?
+    int small = i - 1;
     return small < lo? lo : small; //if small < 0, return 0
 }
 
@@ -158,8 +150,6 @@ void *parallel_local_rearrangement(void *args){
     }
 
     pthread_exit(NULL);
-    return ;
-
 }
 
 int recursive_parallel_quicksort(UINT A[], int lo, int hi, int p) {
@@ -173,12 +163,10 @@ int recursive_parallel_quicksort(UINT A[], int lo, int hi, int p) {
     if (itemsPerThread < 1) return quicksort(A, lo, hi);
 
     /* Set-up for threads */
-//    int pivot = A[randBetween(lo, hi)];
     int* pivot = malloc(sizeof(int));
     *pivot = -1;
 
-    usleep(500);
-//    printf("%d ", pivot);
+    usleep(500); // Fixes unexpected behavior
 
     /* Set-up for threads */
     pthread_t threads[p];
@@ -186,7 +174,6 @@ int recursive_parallel_quicksort(UINT A[], int lo, int hi, int p) {
     lrargs_t *lrargs_arr = malloc(sizeof(lrargs_t)* p);
 
     int i = 0;
-    int lr_small = 0;
     for (i = 0; i < p - 1; ++i) {
         // pass to function (lo + i*itemsPerThread) and (lo + (i+1)*itemsPerThread -1)
         lrargs_arr[i].pivot = pivot;
@@ -253,16 +240,11 @@ int parallel_quicksort(UINT A[], int lo, int hi) {
 int main(int argc, char** argv) {
     printf("[quicksort] Starting up...\n");
 
-    /* Get the number of CPU cores available */
-    int cores = sysconf(_SC_NPROCESSORS_ONLN);
-
     /* parse arguments with getopt */
 
     int tvalue = 3;
     int evalue = 1;
-    int pvalue = 1000;
 
-    int index;
     int c;
 
     opterr = 0;
@@ -315,8 +297,6 @@ int main(int argc, char** argv) {
     size_t numvalues = pow(10, tvalue);
     size_t readbytes = 0;
 
-//    UINT *readbuf = malloc(sizeof(UINT) * numvalues);
-
     // Begin string to datagen
     char data[10];
     strcpy(data,"BEGIN U ");
@@ -326,7 +306,7 @@ int main(int argc, char** argv) {
 
     // pre req socket
     struct sockaddr_un addr;
-    int fd,cl,rc;
+    int fd;
 
     // Create socket
     if ((fd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
@@ -381,66 +361,6 @@ int main(int argc, char** argv) {
         exit(-1);
     }
 
-//    free(readbuf);
-
-//    /* DEMO: request two sets of unsorted random numbers to datagen */
-//    for (int i = 0; i < 2; i++) {
-//        /* T value 3 hardcoded just for testing. */
-//        char *begin = "BEGIN U 3";
-//        int rc = strlen(begin);
-//
-//        /* Request the random number stream to datagen */
-//        if (write(fd, begin, strlen(begin)) != rc) {
-//            if (rc > 0) fprintf(stderr, "[quicksort] partial write.\n");
-//            else {
-//                perror("[quicksort] write error.\n");
-//                exit(-1);
-//            }
-//        }
-//
-//        /* validate the response */
-//        char respbuf[10];
-//        read(fd, respbuf, strlen(DATAGEN_OK_RESPONSE));
-//        respbuf[strlen(DATAGEN_OK_RESPONSE)] = '\0';
-//
-//        if (strcmp(respbuf, DATAGEN_OK_RESPONSE)) {
-//            perror("[quicksort] Response from datagen failed.\n");
-//            close(fd);
-//            exit(-1);
-//        }
-//
-//        UINT readvalues = 0;
-//        size_t numvalues = pow(10, 3);
-//        size_t readbytes = 0;
-//
-//        UINT *readbuf = malloc(sizeof(UINT) * numvalues);
-//
-//        while (readvalues < numvalues) {
-//            /* read the bytestream */
-//            readbytes = read(fd, readbuf + readvalues, sizeof(UINT) * 1000);
-//            readvalues += readbytes / 4;
-//        }
-//
-//        /* Print out the values obtained from datagen */
-//        for (UINT *pv = readbuf; pv < readbuf + numvalues; pv++) {
-//            printf("%u\n", *pv);
-//        }
-//
-//        free(readbuf);
-//    }
-//
-//    /* Issue the END command to datagen */
-//    int rc = strlen(DATAGEN_END_CMD);
-//    if (write(fd, DATAGEN_END_CMD, strlen(DATAGEN_END_CMD)) != rc) {
-//        if (rc > 0) fprintf(stderr, "[quicksort] partial write.\n");
-//        else {
-//            perror("[quicksort] write error.\n");
-//            close(fd);
-//            exit(-1);
-//        }
-//    }
-
-//    free(readbuf);
     close(fd);
     exit(0);
 }
