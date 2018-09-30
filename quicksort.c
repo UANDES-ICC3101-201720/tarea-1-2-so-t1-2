@@ -134,65 +134,97 @@ int main(int argc, char** argv) {
         exit(-1);
     }
 
-
-    /* DEMO: request two sets of unsorted random numbers to datagen */
-    for (int i = 0; i < 2; i++) {
-        /* T value 3 hardcoded just for testing. */
-        char *begin = "BEGIN U 3";
-        int rc = strlen(begin);
-
-        /* Request the random number stream to datagen */
-        if (write(fd, begin, strlen(begin)) != rc) {
-            if (rc > 0) fprintf(stderr, "[quicksort] partial write.\n");
-            else {
-                perror("[quicksort] write error.\n");
-                exit(-1);
-            }
-        }
-
-        /* validate the response */
-        char respbuf[10];
-        read(fd, respbuf, strlen(DATAGEN_OK_RESPONSE));
-        respbuf[strlen(DATAGEN_OK_RESPONSE)] = '\0';
-
-        if (strcmp(respbuf, DATAGEN_OK_RESPONSE)) {
-            perror("[quicksort] Response from datagen failed.\n");
-            close(fd);
+    // Experiments loop
+    for (int j = 0; j < evalue; ++j) {
+        UINT *readbuf = malloc(sizeof(UINT) * numvalues);
+        // Send request to datagen
+        if (write(fd, data, strlen(data)) == -1) {
+            perror("[quicksort] Sending message error.\n");
             exit(-1);
         }
-
-        UINT readvalues = 0;
-        size_t numvalues = pow(10, 3);
-        size_t readbytes = 0;
-
-        UINT *readbuf = malloc(sizeof(UINT) * numvalues);
-
+        // Read stream (by CLAUDIO ALVAREZ GOMEZ)
         while (readvalues < numvalues) {
             /* read the bytestream */
             readbytes = read(fd, readbuf + readvalues, sizeof(UINT) * 1000);
             readvalues += readbytes / 4;
         }
-
-        /* Print out the values obtained from datagen */
-        for (UINT *pv = readbuf; pv < readbuf + numvalues; pv++) {
-            printf("%u\n", *pv);
+        // Print unordered array
+        printf("\nE%d:", j+1);
+        for (int i = 0; i < 10; ++i) {
+            printf("%lu,", (unsigned long) readbuf[i]);
         }
+
 
         free(readbuf);
+        readbuf = NULL;
     }
 
-    /* Issue the END command to datagen */
-    int rc = strlen(DATAGEN_END_CMD);
-    if (write(fd, DATAGEN_END_CMD, strlen(DATAGEN_END_CMD)) != rc) {
-        if (rc > 0) fprintf(stderr, "[quicksort] partial write.\n");
-        else {
-            perror("[quicksort] write error.\n");
-            close(fd);
-            exit(-1);
-        }
+    // Send END to datagen
+    if (write(fd, DATAGEN_END_CMD, strlen(DATAGEN_END_CMD)) == -1) {
+        perror("[quicksort] Sending END message error.\n");
+        exit(-1);
     }
 
-    free(readbuf);
+//    free(readbuf);
+
+//    /* DEMO: request two sets of unsorted random numbers to datagen */
+//    for (int i = 0; i < 2; i++) {
+//        /* T value 3 hardcoded just for testing. */
+//        char *begin = "BEGIN U 3";
+//        int rc = strlen(begin);
+//
+//        /* Request the random number stream to datagen */
+//        if (write(fd, begin, strlen(begin)) != rc) {
+//            if (rc > 0) fprintf(stderr, "[quicksort] partial write.\n");
+//            else {
+//                perror("[quicksort] write error.\n");
+//                exit(-1);
+//            }
+//        }
+//
+//        /* validate the response */
+//        char respbuf[10];
+//        read(fd, respbuf, strlen(DATAGEN_OK_RESPONSE));
+//        respbuf[strlen(DATAGEN_OK_RESPONSE)] = '\0';
+//
+//        if (strcmp(respbuf, DATAGEN_OK_RESPONSE)) {
+//            perror("[quicksort] Response from datagen failed.\n");
+//            close(fd);
+//            exit(-1);
+//        }
+//
+//        UINT readvalues = 0;
+//        size_t numvalues = pow(10, 3);
+//        size_t readbytes = 0;
+//
+//        UINT *readbuf = malloc(sizeof(UINT) * numvalues);
+//
+//        while (readvalues < numvalues) {
+//            /* read the bytestream */
+//            readbytes = read(fd, readbuf + readvalues, sizeof(UINT) * 1000);
+//            readvalues += readbytes / 4;
+//        }
+//
+//        /* Print out the values obtained from datagen */
+//        for (UINT *pv = readbuf; pv < readbuf + numvalues; pv++) {
+//            printf("%u\n", *pv);
+//        }
+//
+//        free(readbuf);
+//    }
+//
+//    /* Issue the END command to datagen */
+//    int rc = strlen(DATAGEN_END_CMD);
+//    if (write(fd, DATAGEN_END_CMD, strlen(DATAGEN_END_CMD)) != rc) {
+//        if (rc > 0) fprintf(stderr, "[quicksort] partial write.\n");
+//        else {
+//            perror("[quicksort] write error.\n");
+//            close(fd);
+//            exit(-1);
+//        }
+//    }
+
+//    free(readbuf);
     close(fd);
     exit(0);
 }
